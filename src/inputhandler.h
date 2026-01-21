@@ -23,7 +23,7 @@ enum class Keys
 	S = DIK_S,
 	D = DIK_D,
 	Space  = DIK_SPACE,
-	LCtrl = DIK_LCONTROL,
+	LCtrl = DIK_C, // DIK_LCONTROL
 	Esc = DIK_ESCAPE,
 };
 

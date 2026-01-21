@@ -1,5 +1,6 @@
 
 #include "Scene.h"
+#include "cubemodel.h"
 #include "QuadModel.h"
 #include "OBJModel.h"
 
@@ -47,8 +48,12 @@ void OurTestScene::Init()
 	// Move camera to (0,0,5)
 	m_camera->MoveTo({ 0, 0, 5 });
 
+
+	// rotates camera
+	m_camera->RotateTo({ 0,0,0 });
+
 	// Create objects
-	m_quad = new QuadModel(m_dxdevice, m_dxdevice_context);
+	m_quad = new CubeModel(m_dxdevice, m_dxdevice_context);
 	m_sponza = new OBJModel("assets/crytek-sponza/sponza.obj", m_dxdevice, m_dxdevice_context);
 }
 
@@ -62,19 +67,30 @@ void OurTestScene::Update(
 {
 	// Basic camera control
 	if (input_handler.IsKeyPressed(Keys::Up) || input_handler.IsKeyPressed(Keys::W))
-		m_camera->Move({ 0.0f, 0.0f, -m_camera_velocity * dt });
+		m_camera->MoveInLocal({ 0.0f, 0.0f, -m_camera_velocity * dt });
 	if (input_handler.IsKeyPressed(Keys::Down) || input_handler.IsKeyPressed(Keys::S))
-		m_camera->Move({ 0.0f, 0.0f, m_camera_velocity * dt });
+		m_camera->MoveInLocal({ 0.0f, 0.0f, m_camera_velocity * dt });
 	if (input_handler.IsKeyPressed(Keys::Right) || input_handler.IsKeyPressed(Keys::D))
-		m_camera->Move({ m_camera_velocity * dt, 0.0f, 0.0f });
+		m_camera->MoveInLocal({ m_camera_velocity * dt, 0.0f, 0.0f });
 	if (input_handler.IsKeyPressed(Keys::Left) || input_handler.IsKeyPressed(Keys::A))
-		m_camera->Move({ -m_camera_velocity * dt, 0.0f, 0.0f });
+		m_camera->MoveInLocal({ -m_camera_velocity * dt, 0.0f, 0.0f });
+
 	if(input_handler.IsKeyPressed(Keys::Space))
 		m_camera->Move({ 0.0f, m_camera_velocity * dt, 0.0f });
 	if(input_handler.IsKeyPressed(Keys::LCtrl))
 		m_camera->Move({ 0.0f, -m_camera_velocity * dt, 0.0f });
+
 	if(input_handler.IsKeyPressed(Keys::Esc))
 		PostQuitMessage(0);
+
+	// rotateing camera control
+	
+	vec3f rotation = { 0,(float)input_handler.GetMouseDeltaX(),(float)input_handler.GetMouseDeltaY() };
+	
+	m_camera->Rotate(rotation * m_camera_sensitivity);
+	m_camera->ClampCameraPitch(-m_camera_pitch_clamp, m_camera_pitch_clamp);
+
+
 
 	// Now set/update object transformations
 	// This can be done using any sequence of transformation matrices,

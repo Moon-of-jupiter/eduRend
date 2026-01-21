@@ -38,6 +38,36 @@ public:
 	*/
 	void Move(const linalg::vec3f& direction) noexcept;
 
+
+
+	// my code
+
+	/**
+	 * @brief Move the camera along a vector rotated to camera local
+	 * @param[in] direction Direction to move along
+	*/
+	void MoveInLocal(const linalg::vec3f& direction) noexcept;
+
+	/**
+	 * @brief set Camera rotation to target rotation
+	 * @param[in] rotation: {roll, yaw, pitch}
+	*/
+	void RotateTo(const linalg::vec3f& rotation) noexcept;
+
+	/**
+	 * @brief Rotate camera along given deltas
+	 * @param[in] rotation: {roll, yaw, pitch}
+	*/
+	void Rotate(const linalg::vec3f& rotationDirections) noexcept;
+
+
+	void ClampCameraPitch(const float min, const float max) noexcept;
+
+		
+
+	// end of my code
+
+
 	/**
 	 * @brief Changes the camera aspect ratio.
 	 * @param[in] aspect_ratio New aspect ratio, calculate with width / height
@@ -58,6 +88,9 @@ public:
 	*/
 	linalg::mat4f ProjectionMatrix() const noexcept;
 
+
+	
+
 private:
 	// Aperture attributes
 	float m_vertical_fov;
@@ -73,6 +106,10 @@ private:
 	float m_far_plane;
 
 	linalg::vec3f m_position;
+
+	linalg::vec3f m_rotation;
+
+	
 };
 
 #endif

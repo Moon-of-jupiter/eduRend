@@ -95,9 +95,17 @@ class OurTestScene : public Scene
 	mat4f m_projection_matrix;
 
 	// Misc
+
+		// model
 	float m_angle = 0;			// A per-frame updated rotation angle (radians)...
 	float m_angular_velocity = fPI / 2;	// ...and its velocity (radians/sec)
+
+		// camera
 	float m_camera_velocity = 5.0f;	// Camera movement velocity in units/s
+	float m_camera_sensitivity = -0.001f;
+	float m_camera_pitch_clamp = fPI / 2 * 0.99f;
+
+
 	float m_fps_cooldown = 0;
 
 	void InitTransformationBuffer();
