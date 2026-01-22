@@ -103,6 +103,9 @@ void OurTestScene::Update(
 		mat4f::rotation(-m_angle, 0.0f, 1.0f, 0.0f) *	// Rotate continuously around the y-axis
 		mat4f::scaling(1.5, 1.5, 1.5);				// Scale uniformly to 150%
 
+	
+		
+
 	// Sponza model-to-world transformation
 	m_sponza_transform = mat4f::translation(0, -5, 0) *		 // Move down 5 units
 		mat4f::rotation(fPI / 2, 0.0f, 1.0f, 0.0f) * // Rotate pi/2 radians (90 degrees) around y
@@ -136,6 +139,27 @@ void OurTestScene::Render()
 	// Load matrices + the Quad's transformation to the device and render it
 	UpdateTransformationBuffer(m_quad_transform, m_view_matrix, m_projection_matrix);
 	m_quad->Render();
+
+	m_smallCube_transform = m_quad_transform *
+		mat4f::translation(0, 0, 2) *					// Small translation
+		mat4f::rotation(-m_angle, 0.0f, 1.0f, 0.0f) *		// No rotation
+		mat4f::scaling(0.5f, 0.5f, 0.5f);				// scale to 50%
+
+
+	// Load matrices + the secondary cubes transformation to the device and render it
+	UpdateTransformationBuffer(m_smallCube_transform, m_view_matrix, m_projection_matrix);
+	m_quad->Render();
+
+	m_smallCube_transform = m_smallCube_transform *
+		mat4f::translation(0, 0, 2) *					// Small translation
+		mat4f::rotation(-m_angle, 0.0f, 1.0f, 0.0f) *		// No rotation
+		mat4f::scaling(0.5f, 0.5f, 0.5f);				// scale to 50%
+
+	// Load matrices + the secondary cubes transformation to the device and render it
+	UpdateTransformationBuffer(m_smallCube_transform, m_view_matrix, m_projection_matrix);
+	m_quad->Render();
+
+	//m_sponza_transform = m_smallCube_transform*  m_sponza_transform ;
 
 	// Load matrices + Sponza's transformation to the device and render it
 	UpdateTransformationBuffer(m_sponza_transform, m_view_matrix, m_projection_matrix);

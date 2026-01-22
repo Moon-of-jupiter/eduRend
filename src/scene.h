@@ -90,6 +90,7 @@ class OurTestScene : public Scene
 
 	mat4f m_sponza_transform;
 	mat4f m_quad_transform;
+	mat4f m_smallCube_transform;
 
 	mat4f m_view_matrix;
 	mat4f m_projection_matrix;
@@ -101,7 +102,7 @@ class OurTestScene : public Scene
 	float m_angular_velocity = fPI / 2;	// ...and its velocity (radians/sec)
 
 		// camera
-	float m_camera_velocity = 5.0f;	// Camera movement velocity in units/s
+	float m_camera_velocity = 8.0f;	// Camera movement velocity in units/s
 	float m_camera_sensitivity = -0.001f;
 	float m_camera_pitch_clamp = fPI / 2 * 0.99f;
 
