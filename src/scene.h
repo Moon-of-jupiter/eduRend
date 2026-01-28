@@ -80,6 +80,10 @@ class OurTestScene : public Scene
 	ID3D11Buffer* m_transformation_buffer = nullptr;
 	// + other CBuffers
 
+	ID3D11Buffer* m_lightCamera_buffer = nullptr;
+
+
+
 	//
 	// Scene content
 	//
@@ -94,6 +98,8 @@ class OurTestScene : public Scene
 
 	mat4f m_view_matrix;
 	mat4f m_projection_matrix;
+
+	
 
 	// Misc
 
