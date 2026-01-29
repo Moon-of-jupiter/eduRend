@@ -31,6 +31,7 @@ OurTestScene::OurTestScene(
 	Scene(dxdevice, dxdevice_context, window_width, window_height)
 { 
 	InitTransformationBuffer();
+	InitLightCameraBuffer();
 	// + init other CBuffers
 }
 
@@ -83,6 +84,8 @@ void OurTestScene::Update(
 	if(input_handler.IsKeyPressed(Keys::Esc))
 		PostQuitMessage(0);
 
+	
+
 	// rotateing camera control
 	
 	vec3f rotation = { 0,(float)input_handler.GetMouseDeltaX(),(float)input_handler.GetMouseDeltaY() };
@@ -90,6 +93,9 @@ void OurTestScene::Update(
 	m_camera->Rotate(rotation * m_camera_sensitivity);
 	m_camera->ClampCameraPitch(-m_camera_pitch_clamp, m_camera_pitch_clamp);
 
+
+	m_cameraPos = m_camera->m_position.xyz1();
+	m_lightPos = float4(0,4,0,1);
 
 
 	// Now set/update object transformations
@@ -131,6 +137,10 @@ void OurTestScene::Render()
 {
 	// Bind transformation_buffer to slot b0 of the VS
 	m_dxdevice_context->VSSetConstantBuffers(0, 1, &m_transformation_buffer);
+	m_dxdevice_context->PSSetConstantBuffers(0, 1, &m_lightCamera_buffer);
+
+	
+	UpdateLightCameraBuffer(m_cameraPos, m_lightPos);
 
 	// Obtain the matrices needed for rendering from the camera
 	m_view_matrix = m_camera->WorldToViewMatrix();
@@ -173,6 +183,7 @@ void OurTestScene::Release()
 	SAFE_DELETE(m_camera);
 
 	SAFE_RELEASE(m_transformation_buffer);
+	SAFE_RELEASE(m_lightCamera_buffer)
 	// + release other CBuffers
 }
 
@@ -213,3 +224,28 @@ void OurTestScene::UpdateTransformationBuffer(
 	matrixBuffer->ProjectionMatrix = ProjectionMatrix;
 	m_dxdevice_context->Unmap(m_transformation_buffer, 0);
 }
+
+
+
+
+void OurTestScene::InitLightCameraBuffer() {
+	HRESULT hr;
+	D3D11_BUFFER_DESC lightCameraBufferDesc = { 0 };
+	lightCameraBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+	lightCameraBufferDesc.ByteWidth = sizeof(LightCameraBuffer);
+	lightCameraBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	lightCameraBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	lightCameraBufferDesc.MiscFlags = 0;
+	lightCameraBufferDesc.StructureByteStride = 0;
+	ASSERT(hr = m_dxdevice->CreateBuffer(&lightCameraBufferDesc, nullptr, &m_lightCamera_buffer));
+}
+
+void OurTestScene::UpdateLightCameraBuffer(vec4f cameraPos, vec4f lightPos) {
+	D3D11_MAPPED_SUBRESOURCE resource;
+	m_dxdevice_context->Map(m_lightCamera_buffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &resource);
+	LightCameraBuffer* lightCamera = (LightCameraBuffer*)resource.pData;
+	lightCamera->CameraPos = cameraPos;
+	lightCamera->LightPos = lightPos;
+	m_dxdevice_context->Unmap(m_lightCamera_buffer, 0);
+}
+

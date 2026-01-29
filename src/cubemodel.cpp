@@ -105,7 +105,7 @@ void CubeModel::FillVertexVector(std::vector<Vertex> & v, float pitch, float yaw
 		
 	}
 
-	auto rot =		mat4f::rotation(0, yaw, pitch);
+	auto rot =	mat4f::rotation(0, yaw, pitch);
 	
 	float halfScale = scale * 0.5f;
 

@@ -99,7 +99,8 @@ class OurTestScene : public Scene
 	mat4f m_view_matrix;
 	mat4f m_projection_matrix;
 
-	
+	vec4f m_cameraPos;
+	vec4f m_lightPos;
 
 	// Misc
 
@@ -118,6 +119,11 @@ class OurTestScene : public Scene
 	void InitTransformationBuffer();
 
 	void UpdateTransformationBuffer(mat4f model_to_world_matrix, mat4f world_to_view_matrix, mat4f projection_matrix);
+
+	void InitLightCameraBuffer();
+
+	void UpdateLightCameraBuffer(vec4f cameraPos, vec4f lightPos);
+
 
 public:
 	/**

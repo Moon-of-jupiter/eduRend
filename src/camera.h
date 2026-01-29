@@ -89,7 +89,9 @@ public:
 	linalg::mat4f ProjectionMatrix() const noexcept;
 
 
-	
+	linalg::vec3f m_position;
+
+	linalg::vec3f m_rotation;
 
 private:
 	// Aperture attributes
@@ -105,9 +107,7 @@ private:
 	float m_near_plane;
 	float m_far_plane;
 
-	linalg::vec3f m_position;
-
-	linalg::vec3f m_rotation;
+	
 
 	
 };
