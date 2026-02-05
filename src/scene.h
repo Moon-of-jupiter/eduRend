@@ -82,6 +82,7 @@ class OurTestScene : public Scene
 
 	ID3D11Buffer* m_lightCamera_buffer = nullptr;
 
+	ID3D11Buffer* m_sharedMaterialBuffer = nullptr;
 
 
 	//
@@ -124,6 +125,8 @@ class OurTestScene : public Scene
 
 	void UpdateLightCameraBuffer(vec4f cameraPos, vec4f lightPos);
 
+	void InitSharedMaterialBuffer();
+
 
 public:
 	/**
@@ -151,6 +154,7 @@ public:
 	 * @brief Renders all objects in the scene
 	*/
 	void Render() override;
+
 
 	/**
 	 * @brief Releases all resources created by the scene.

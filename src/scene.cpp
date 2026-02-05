@@ -32,6 +32,7 @@ OurTestScene::OurTestScene(
 { 
 	InitTransformationBuffer();
 	InitLightCameraBuffer();
+	InitSharedMaterialBuffer();
 	// + init other CBuffers
 }
 
@@ -54,8 +55,8 @@ void OurTestScene::Init()
 	m_camera->RotateTo({ 0,0,0 });
 
 	// Create objects
-	m_quad = new CubeModel(m_dxdevice, m_dxdevice_context);
-	m_sponza = new OBJModel("assets/crytek-sponza/sponza.obj", m_dxdevice, m_dxdevice_context);
+	m_quad =  new OBJModel("assets/sphere/sphere.obj", m_dxdevice, m_dxdevice_context, m_sharedMaterialBuffer);
+	m_sponza = new OBJModel("assets/crytek-sponza/sponza.obj", m_dxdevice, m_dxdevice_context, m_sharedMaterialBuffer);
 }
 
 //
@@ -95,7 +96,7 @@ void OurTestScene::Update(
 
 
 	m_cameraPos = m_camera->m_position.xyz1();
-	m_lightPos = float4(0,4,0,1);
+	m_lightPos =  float4(100,4,0,0);
 
 
 	// Now set/update object transformations
@@ -138,7 +139,7 @@ void OurTestScene::Render()
 	// Bind transformation_buffer to slot b0 of the VS
 	m_dxdevice_context->VSSetConstantBuffers(0, 1, &m_transformation_buffer);
 	m_dxdevice_context->PSSetConstantBuffers(0, 1, &m_lightCamera_buffer);
-
+	m_dxdevice_context->PSSetConstantBuffers(1, 1, &m_sharedMaterialBuffer);
 	
 	UpdateLightCameraBuffer(m_cameraPos, m_lightPos);
 
@@ -176,6 +177,7 @@ void OurTestScene::Render()
 	m_sponza->Render();
 }
 
+
 void OurTestScene::Release()
 {
 	SAFE_DELETE(m_quad);
@@ -183,7 +185,9 @@ void OurTestScene::Release()
 	SAFE_DELETE(m_camera);
 
 	SAFE_RELEASE(m_transformation_buffer);
-	SAFE_RELEASE(m_lightCamera_buffer)
+	SAFE_RELEASE(m_lightCamera_buffer);
+	SAFE_RELEASE(m_sharedMaterialBuffer);
+
 	// + release other CBuffers
 }
 
@@ -249,3 +253,17 @@ void OurTestScene::UpdateLightCameraBuffer(vec4f cameraPos, vec4f lightPos) {
 	m_dxdevice_context->Unmap(m_lightCamera_buffer, 0);
 }
 
+void OurTestScene::InitSharedMaterialBuffer() {
+
+	HRESULT hr;
+	D3D11_BUFFER_DESC materialBuffer = { 0 };
+	materialBuffer.Usage = D3D11_USAGE_DYNAMIC;
+	materialBuffer.ByteWidth = sizeof(MaterialBuffer);
+	materialBuffer.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	materialBuffer.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	materialBuffer.MiscFlags = 0;
+	materialBuffer.StructureByteStride = 0;
+	ASSERT(hr = m_dxdevice->CreateBuffer(&materialBuffer, nullptr, &m_sharedMaterialBuffer));
+
+	
+}

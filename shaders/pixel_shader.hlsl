@@ -7,6 +7,15 @@ cbuffer LightCameraBuffer : register(b0)
     float4 lightPos;
 };
 
+cbuffer MaterialBuffer : register(b1)
+{
+    float4 diffuseColor_Glossyness;
+    float4 specularColor;
+    float4 AmbiantColor;
+}
+
+SamplerState texSampler : register(s0);
+
 struct PSIn
 {
 	float4 Pos  : SV_Position;
@@ -36,17 +45,24 @@ float4 PS_main(PSIn input) : SV_Target
     
     float specular = abs(clamp(dot(view, reflectedLight), 0, 1));
     
-    specular = pow(specular, 20) / 2;
+    specular = pow(specular, diffuseColor_Glossyness.a);
     
-    float bands = 4;
-	
-    float posterized = half_lambert + specular;
+    float bands = 1;
     
-    posterized *= bands;
-    posterized = floor(posterized);
-    posterized /= bands;
+    float dither = sin((input.Pos.x + input.Pos.y)) * 0.1;
+    
+    
+
+    float sin2 = sin((input.Pos.x + input.Pos.y) * 0.3);
+    
+    //return float4(dither, dither, dither, 1);
+    
+    float posterized = smoothstep(0.099, 0.1, lambert + dither );
+    
+    //posterized = max(step(0, sin2), posterized);
+    
 	
-    float4 ambient = float4(0.2, 0, 0.2, 0);
+    float4 ambient = float4(0.1, 0, 0.4, 0);
     float4 diffuse = float4(0.66, 0.6, 0.1, 1);
     
     
@@ -56,9 +72,26 @@ float4 PS_main(PSIn input) : SV_Target
     //return input.WorldPos;
     //return float4(input.Normal * 0.5 + 0.5, 1) ;
     //return input.Pos;
-    return diffuse * half_lambert + ambient + specular;
+    
+    float4 specColor = float4(1,1, 0.5, 0);
+    
+    float frensel = pow(abs((dot(input.Normal, view) + 1) / 2), 2);
+    
+    //return float4(diffuseColor_Glossyness.yxz, 1) * half_lambert + ambient + specular * specularColor;
+
+    
+    float edge = step(0.1, frensel * half_lambert - dither * 0.1);
+    
+    return float4(diffuseColor_Glossyness.yxz, 1) * posterized + AmbiantColor + step(0.1, specular + dither * 0.1) * specularColor + edge * specularColor; //frensel * 10 + step(0.4, frensel * half_lambert);
+    
+    //return float4(diffuseColor_Glossyness.yxz, 1);
+    
+    
+    //return frensel;
+    
     //return cameraPos;
     
 	// Debug shading #2: map and return texture coordinates as a color (blue = 0)
     //return float4(input.TexCoord, 0, 1);
 }
+

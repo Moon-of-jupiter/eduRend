@@ -23,3 +23,9 @@ struct LightCameraBuffer {
 	linalg::vec4f CameraPos;
 	linalg::vec4f LightPos;
 };
+
+struct MaterialBuffer {
+	linalg::vec4f diffuseColor_Glossyness;
+	linalg::vec4f specularColor;
+	linalg::vec4f ambiantColor;
+};

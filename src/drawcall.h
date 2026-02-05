@@ -15,6 +15,7 @@
 #include "vec/vec.h"
 
 #include "Texture.h"
+#include "buffers.h"
 
 using namespace linalg;
 

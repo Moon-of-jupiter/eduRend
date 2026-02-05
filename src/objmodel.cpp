@@ -3,9 +3,13 @@
 OBJModel::OBJModel(
 	const std::string& objfile,
 	ID3D11Device* dxdevice,
-	ID3D11DeviceContext* dxdevice_context)
+	ID3D11DeviceContext* dxdevice_context, ID3D11Buffer* sharedMaterialBuffer)
 	: Model(dxdevice, dxdevice_context)
 {
+
+	m_materialBuffer = sharedMaterialBuffer;
+
+
 	// Load the OBJ
 	OBJLoader* mesh = new OBJLoader();
 	mesh->Load(objfile);
@@ -106,9 +110,23 @@ void OBJModel::Render() const
 		m_dxdevice_context->PSSetShaderResources(0, 1, &material.DiffuseTexture.TextureView);
 		// + bind other textures here, e.g. a normal map, to appropriate slots
 
+		UpdateMaterialBuffer(material);
+
 		// Make the drawcall
 		m_dxdevice_context->DrawIndexed(indexRange.Size, indexRange.Start, 0);
 	}
+}
+
+void OBJModel::UpdateMaterialBuffer(const Material& material) const {
+	D3D11_MAPPED_SUBRESOURCE resource;
+	m_dxdevice_context->Map(m_materialBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &resource);
+	MaterialBuffer* materialData = (MaterialBuffer*)resource.pData;
+	
+	materialData->ambiantColor = vec4f(0.1f, 0, 0.4f, 1);
+	materialData->specularColor = vec4f(material.SpecularColour, 1);
+	materialData->diffuseColor_Glossyness = vec4f(material.DiffuseColour, 40);
+
+	m_dxdevice_context->Unmap(m_materialBuffer, 0);
 }
 
 OBJModel::~OBJModel()
