@@ -1,7 +1,7 @@
 #include "cubemodel.h"
-CubeModel::CubeModel(
+CubeModel::CubeModel(Material material,
 	ID3D11Device* dxdevice,
-	ID3D11DeviceContext* dxdevice_context)
+	ID3D11DeviceContext* dxdevice_context, ID3D11Buffer* materialBuffer)
 	: Model(dxdevice, dxdevice_context)
 {
 	// Vertex and index arrays
@@ -96,7 +96,37 @@ CubeModel::CubeModel(
 	SETNAME(m_index_buffer, "IndexBuffer");
 
 	m_number_of_indices = (unsigned int)indices.size();
+
+
+
+
+
+	m_materialBuffer = materialBuffer;
+
+
+
+	std::cout << "Loading CubeModel textures..." << std::endl;
+	m_material = material;
+
+	HRESULT hr;
+
+	// Load Diffuse texture
+	//
+	if (m_material.DiffuseTextureFilename.size()) {
+
+		hr = LoadTextureFromFile(
+			dxdevice,
+			dxdevice_context,
+			m_material.DiffuseTextureFilename.c_str(),
+			&m_material.DiffuseTexture);
+		std::cout << "\t" << m_material.DiffuseTextureFilename
+			<< (SUCCEEDED(hr) ? " - OK" : "- FAILED") << std::endl;
+	}
+
+	std::cout << "Done." << std::endl;
+	
 }
+
 
 void CubeModel::FillVertexVector(std::vector<Vertex> & v, float pitch, float yaw, float scale) {
 	while (v.size() < 4) {
@@ -144,7 +174,17 @@ void CubeModel::FillVertexVector(std::vector<Vertex> & v, float pitch, float yaw
 	
 }
 
+void CubeModel::UpdateMaterialBuffer(const Material& material) const {
+	D3D11_MAPPED_SUBRESOURCE resource;
+	m_dxdevice_context->Map(m_materialBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &resource);
+	MaterialBuffer* materialData = (MaterialBuffer*)resource.pData;
 
+	materialData->ambiantColor = vec4f(0.1f, 0, 0.4f, 1);
+	materialData->specularColor = vec4f(material.SpecularColour, 1);
+	materialData->diffuseColor_Glossyness = vec4f(material.DiffuseColour, 40);
+
+	m_dxdevice_context->Unmap(m_materialBuffer, 0);
+}
 
 void CubeModel::Render() const
 {
@@ -155,6 +195,15 @@ void CubeModel::Render() const
 
 	// Bind our index buffer
 	m_dxdevice_context->IASetIndexBuffer(m_index_buffer, DXGI_FORMAT_R32_UINT, 0);
+
+
+
+	// Bind diffuse texture to slot t0 of the PS
+	m_dxdevice_context->PSSetShaderResources(0, 1, &m_material.DiffuseTexture.TextureView);
+	// + bind other textures here, e.g. a normal map, to appropriate slots
+
+	UpdateMaterialBuffer(m_material);
+
 
 	// Make the drawcall
 	m_dxdevice_context->DrawIndexed(m_number_of_indices, 0, 0);

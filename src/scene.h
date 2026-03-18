@@ -84,6 +84,9 @@ class OurTestScene : public Scene
 
 	ID3D11Buffer* m_sharedMaterialBuffer = nullptr;
 
+	ID3D11SamplerState* m_samplerStateStandard = nullptr;
+
+	Texture m_cube_texture;
 
 	//
 	// Scene content
@@ -142,6 +145,10 @@ public:
 	 * @brief Initializes all resources held by the scene.
 	*/
 	void Init() override;
+
+
+	void SetSkyboxCubeMap(const std::string& file_path);
+
 
 	/**
 	 * @brief Updates all ojects in the scene

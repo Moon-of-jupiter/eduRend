@@ -33,6 +33,18 @@ OBJModel::OBJModel(
 		indexOffset = (unsigned int)indices.size();
 	}
 
+
+	// calculate tangent and binormal
+
+	for (int i = 0; i < indices.size(); i += 3) 
+		Compute_TB(
+			mesh->Vertices[indices[i + 0]], 
+			mesh->Vertices[indices[i + 1]], 
+			mesh->Vertices[indices[i + 2]]);
+	
+
+
+
 	// Vertex array descriptor
 	D3D11_BUFFER_DESC vertexbufferDesc = { 0 };
 	vertexbufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
@@ -76,9 +88,36 @@ OBJModel::OBJModel(
 
 			hr = LoadTextureFromFile(
 				dxdevice,
+				dxdevice_context,
 				material.DiffuseTextureFilename.c_str(),
 				&material.DiffuseTexture);
 			std::cout << "\t" << material.DiffuseTextureFilename
+				<< (SUCCEEDED(hr) ? " - OK" : "- FAILED") << std::endl;
+		}
+
+		// Load NormalMap texture
+		//
+		if (material.NormalTextureFilename.size()) {
+
+			hr = LoadTextureFromFile(
+				dxdevice,
+				dxdevice_context,
+				material.NormalTextureFilename.c_str(),
+				&material.NormalMapTexture);
+			std::cout << "\t" << material.NormalTextureFilename
+				<< (SUCCEEDED(hr) ? " - OK" : "- FAILED") << std::endl;
+		}
+
+		// Load Specular texture
+		//
+		if (material.SpecularTextureFilename.size()) {
+
+			hr = LoadTextureFromFile(
+				dxdevice,
+				dxdevice_context,
+				material.SpecularTextureFilename.c_str(),
+				&material.SpecularTexture);
+			std::cout << "\t" << material.SpecularTextureFilename
 				<< (SUCCEEDED(hr) ? " - OK" : "- FAILED") << std::endl;
 		}
 
@@ -108,6 +147,9 @@ void OBJModel::Render() const
 
 		// Bind diffuse texture to slot t0 of the PS
 		m_dxdevice_context->PSSetShaderResources(0, 1, &material.DiffuseTexture.TextureView);
+		m_dxdevice_context->PSSetShaderResources(1, 1, &material.NormalMapTexture.TextureView);
+		m_dxdevice_context->PSSetShaderResources(2, 1, &material.SpecularTexture.TextureView);
+
 		// + bind other textures here, e.g. a normal map, to appropriate slots
 
 		UpdateMaterialBuffer(material);

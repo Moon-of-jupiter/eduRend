@@ -26,7 +26,6 @@ class OBJModel : public Model
 	std::vector<IndexRange> m_index_ranges;
 	std::vector<Material> m_materials;
 
-
 	// shared material cBuffer
 	ID3D11Buffer* m_materialBuffer;
 
@@ -37,6 +36,7 @@ class OBJModel : public Model
 	}
 
 	void UpdateMaterialBuffer(const Material& material) const;
+
 
 public:
 
@@ -53,6 +53,8 @@ public:
 	 * @brief Renders the model.
 	*/
 	virtual void Render() const;
+
+	
 
 	/**
 	 * @brief Destructor 

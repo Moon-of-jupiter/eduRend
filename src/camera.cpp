@@ -16,7 +16,7 @@ void Camera::MoveInLocal(const vec3f& direction) noexcept
 {
 	auto localToWorld = mat4f::rotation(m_rotation.x, m_rotation.y, m_rotation.z);
 
-	m_position += (localToWorld * direction.xyz1()).xyz();
+	m_position += (localToWorld.get_3x3() * direction);
 }
 
 

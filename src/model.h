@@ -32,6 +32,66 @@ protected:
 	ID3D11Buffer* m_vertex_buffer = nullptr; //!< Pointer to gpu side vertex buffer
 	ID3D11Buffer* m_index_buffer = nullptr; //!< Pointer to gpu side index buffer
 
+	void Compute_TB(Vertex& v0, Vertex& v1, Vertex& v2) {
+		vec3f tangent = vec3f(0,1,0);
+		vec3f binormal = vec3f(0,1,0);
+		
+		// TO DO: add stuff
+
+		vec3f D = v1.Position - v0.Position;
+		vec3f E = v2.Position - v0.Position;
+
+		vec2f F = v1.TexCoord - v0.TexCoord;
+		vec2f G = v2.TexCoord - v0.TexCoord;
+
+		float Fu = F.y ;
+		float Fv = F.x ;
+
+		float Gu = G.y;
+		float Gv = G.x ;
+
+
+		// [ Gv,-Fv, 0  ]
+		// [-Gu, Fu, 0  ]
+		// [ 0 , 0 , 1  ]
+		mat3f FG_inv_mat = mat3f(
+			float3( Gv,-Fv, 0),
+			float3(-Gu, Fu, 0),
+			float3( 0 , 0 , 1)
+			);
+		FG_inv_mat.transpose();
+		FG_inv_mat.inverse();
+		
+
+		// [ Dx, Dy, Dz ]
+		// [ Ex, Ey, Ez ]
+		// [ 0 , 0 , 1  ]
+		mat3f DE_mat = mat3f(
+			D,
+			E,
+			float3(0,0,1)
+			);
+		DE_mat.transpose();
+		DE_mat.inverse();
+		
+
+		// [ Tx, Ty, Tz ]
+		// [ Bx, By, Bz ]
+		// [ 0 , 0 , 1  ]
+
+		float n = (1.0f / (Fu * Gv - Fv * Gu));
+		
+		mat3f TB_mat =  ( FG_inv_mat * DE_mat) * n;
+
+		tangent =	vec3f(TB_mat.m11, TB_mat.m12, TB_mat.m13);
+		binormal =	vec3f(TB_mat.m21, TB_mat.m22, TB_mat.m23);
+		
+
+		v0.Tangent = v1.Tangent = v2.Tangent = tangent;
+		v0.Binormal = v1.Binormal = v2.Binormal = binormal;
+	}
+
+
 public:
 
 	/**

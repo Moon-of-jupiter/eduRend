@@ -41,6 +41,9 @@ OurTestScene::OurTestScene(
 //
 void OurTestScene::Init()
 {
+	
+
+
 	m_camera = new Camera(
 		45.0f * fTO_RAD,		// field-of-view (radians)
 		(float)m_window_width / m_window_height,	// aspect ratio
@@ -54,10 +57,82 @@ void OurTestScene::Init()
 	// rotates camera
 	m_camera->RotateTo({ 0,0,0 });
 
+
+	Material cubeMat = Material();
+	cubeMat.AmbientColour = vec3f(1, 0, 0);
+	cubeMat.DiffuseTextureFilename = "assets/textures/wood.png";
+
+
 	// Create objects
-	m_quad =  new OBJModel("assets/sphere/sphere.obj", m_dxdevice, m_dxdevice_context, m_sharedMaterialBuffer);
+	m_quad = new CubeModel(cubeMat,m_dxdevice, m_dxdevice_context, m_sharedMaterialBuffer); //new OBJModel("assets/sphere/sphere.obj", m_dxdevice, m_dxdevice_context, m_sharedMaterialBuffer);
 	m_sponza = new OBJModel("assets/crytek-sponza/sponza.obj", m_dxdevice, m_dxdevice_context, m_sharedMaterialBuffer);
+
+
+	
+	
+
+	//D3D11_FILTER_MIN_MAG_MIP_POINT
+	D3D11_SAMPLER_DESC samplerdesc = {
+		D3D11_FILTER_ANISOTROPIC,			// Filter
+		D3D11_TEXTURE_ADDRESS_WRAP,			// AddressU
+		D3D11_TEXTURE_ADDRESS_WRAP,			// AddressV
+		D3D11_TEXTURE_ADDRESS_WRAP,			// AddressW
+		0.0f,								// MipLODBias
+		16,									// MaxAnisotropy
+		D3D11_COMPARISON_NEVER,				// ComapirsonFunc
+		{ 1.0f, 1.0f, 1.0f, 1.0f },			// BorderColor
+		-FLT_MAX,							// MinLOD
+		FLT_MAX,							// MaxLOD
+	};
+
+	m_dxdevice->CreateSamplerState(&samplerdesc, &m_samplerStateStandard);
+
+
+	
+
+
+	m_cube_texture = Texture();
+
+	//cube map skybox
+	SetSkyboxCubeMap("assets/cubemaps/Skybox/Skybox-");
+	//"assets/cubemaps/astrocosm_01/astrocosm_reflection_01_"
+	//"assets/cubemaps/Skybox/Skybox-"
+	//"assets/cubemaps/debug_cubemap/debug_"
+	//"assets/cubemaps/brightday/"
 }
+
+
+void OurTestScene::SetSkyboxCubeMap(const std::string& file_path) {
+
+
+	std::string cube_filenams_string[6] = {
+
+		(file_path + "posx.png"),
+		(file_path + "negx.png"),
+
+		(file_path + "negy.png"), // dirty bug fix, swapped pos and neg y
+		(file_path + "posy.png"),
+
+		(file_path + "posz.png"),
+		(file_path + "negz.png")
+	};
+
+	
+	const char* cube_filenames[6];
+	for (int i = 0; i < 6; i++)
+		cube_filenames[i] = cube_filenams_string[i].c_str();
+	
+	HRESULT hr = LoadCubeTextureFromFile(m_dxdevice, cube_filenames, &m_cube_texture);
+
+	if (SUCCEEDED(hr)) std::cout << "Cubemap OK" << std::endl;
+	else std::cout << "Cubemap failed to load" << std::endl;
+
+
+	
+
+
+}
+
 
 //
 // Called every frame
@@ -96,7 +171,7 @@ void OurTestScene::Update(
 
 
 	m_cameraPos = m_camera->m_position.xyz1();
-	m_lightPos =  float4(100,4,0,0);
+	m_lightPos = vec4f(3,4,60,0);
 
 
 	// Now set/update object transformations
@@ -140,7 +215,20 @@ void OurTestScene::Render()
 	m_dxdevice_context->VSSetConstantBuffers(0, 1, &m_transformation_buffer);
 	m_dxdevice_context->PSSetConstantBuffers(0, 1, &m_lightCamera_buffer);
 	m_dxdevice_context->PSSetConstantBuffers(1, 1, &m_sharedMaterialBuffer);
+
 	
+
+
+
+	
+
+	m_dxdevice_context->PSSetSamplers(0, 1, &m_samplerStateStandard);
+
+	unsigned cube_tex_slot = 3;
+	m_dxdevice_context->PSSetShaderResources(cube_tex_slot, 1, &m_cube_texture.TextureView);
+
+
+
 	UpdateLightCameraBuffer(m_cameraPos, m_lightPos);
 
 	// Obtain the matrices needed for rendering from the camera
@@ -180,12 +268,15 @@ void OurTestScene::Render()
 
 void OurTestScene::Release()
 {
+	SAFE_RELEASE(m_cube_texture.TextureView);
+
 	SAFE_DELETE(m_quad);
 	SAFE_DELETE(m_sponza);
 	SAFE_DELETE(m_camera);
 
 	SAFE_RELEASE(m_transformation_buffer);
 	SAFE_RELEASE(m_lightCamera_buffer);
+	SAFE_RELEASE(m_sharedMaterialBuffer);
 	SAFE_RELEASE(m_sharedMaterialBuffer);
 
 	// + release other CBuffers
