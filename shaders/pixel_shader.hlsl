@@ -12,6 +12,8 @@ cbuffer LightCameraBuffer : register(b0)
     float4 lightPos;
 };
 
+
+
 cbuffer MaterialBuffer : register(b1)
 {
     float4 diffuseColor_Glossyness;
@@ -19,8 +21,12 @@ cbuffer MaterialBuffer : register(b1)
     float4 AmbiantColor;
 }
 
+
+
 SamplerState texSampler_Diffuse : register(s0);
 SamplerState texSampler_Skybox : register(s1);
+
+
 
 struct PSIn
 {
@@ -71,16 +77,16 @@ float4 ReflectionsCubemap(float3 normals, float3 view)
     return cubeMapSkybox.Sample(texSampler_Diffuse, skyBoxSample);
 }
 
+
+
 float4 PS_Testing(PSIn input)
 {
-    float3 worldNormal = normalize(GetNormals(input));
+    
 
     float3 view = normalize(input.WorldPos - cameraPos).xyz;
-
     
     
-    
-    return SkyboxCubemap(view);
+    return texDiffuse.Sample(texSampler_Diffuse, input.TexCoord) * AmbiantColor.w + SkyboxCubemap(view) * (1 - AmbiantColor.w);
 
 }
 
@@ -129,19 +135,7 @@ float4 PS_HalfLambert(PSIn input)
     
     specular = pow(specular, diffuseColor_Glossyness.a * 0.5) * light_amount;
     
-    float bands = 1;
     
-    float dither = sin((input.Pos.x + input.Pos.y)) * 0.1;
-    
-    
-
-    float sin2 = sin((input.Pos.x + input.Pos.y) * 0.3);
-    
-    //return float4(dither, dither, dither, 1);
-    
-    float utalizedLambert = lerp(lambert, half_lambert, light_amount * 0.7);
-    
-    float posterized = smoothstep(0.099, 0.1, lambert + dither);
     
     //posterized = max(step(0, sin2), posterized);
     
@@ -177,7 +171,7 @@ float4 PS_HalfLambert(PSIn input)
     
     // diffuse
     
-    float lerp_refl = 0.1;
+    float lerp_refl = 0.4;
     float4 diffuse_base = (float4(diffuseColor_Glossyness.yxz, 1) * diffuseTex) * (1 - lerp_refl) + reflection_component * lerp_refl;
     float4 diffuse_light = half_lambert * lightColor;
     
@@ -194,9 +188,9 @@ float4 PS_HalfLambert(PSIn input)
     float4 specular_component = spec_base * spec_light;
     
     // combination
-    return diffuse_component + ambiant_component + specular_component;
+    float4 combination = diffuse_component + ambiant_component + specular_component;
 
-    
+    return combination * AmbiantColor.w + SkyboxCubemap(view) * (1 - AmbiantColor.w);
     
     
     

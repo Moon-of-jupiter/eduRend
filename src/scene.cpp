@@ -64,9 +64,13 @@ void OurTestScene::Init()
 
 
 	// Create objects
-	m_quad = new CubeModel(cubeMat,m_dxdevice, m_dxdevice_context, m_sharedMaterialBuffer); //new OBJModel("assets/sphere/sphere.obj", m_dxdevice, m_dxdevice_context, m_sharedMaterialBuffer);
+	m_quad = new CubeModel(cubeMat, false, m_dxdevice, m_dxdevice_context, m_sharedMaterialBuffer); //new OBJModel("assets/sphere/sphere.obj", m_dxdevice, m_dxdevice_context, m_sharedMaterialBuffer);
 	m_sponza = new OBJModel("assets/crytek-sponza/sponza.obj", m_dxdevice, m_dxdevice_context, m_sharedMaterialBuffer);
 
+	Material skymat = Material();
+	skymat.AmbientColour = vec3f(1, 0, 0);
+	skymat.inv_skybox_value = 0;
+	m_skybox = new CubeModel(skymat, true, m_dxdevice, m_dxdevice_context, m_sharedMaterialBuffer);
 
 	
 	
@@ -173,6 +177,7 @@ void OurTestScene::Update(
 	m_cameraPos = m_camera->m_position.xyz1();
 	m_lightPos = vec4f(3,4,60,0);
 
+	m_skybox_transform = mat4f::translation(m_cameraPos.x, m_cameraPos.y, m_cameraPos.z) * mat4f::scaling(600, 600, 600);
 
 	// Now set/update object transformations
 	// This can be done using any sequence of transformation matrices,
@@ -216,7 +221,7 @@ void OurTestScene::Render()
 	m_dxdevice_context->PSSetConstantBuffers(0, 1, &m_lightCamera_buffer);
 	m_dxdevice_context->PSSetConstantBuffers(1, 1, &m_sharedMaterialBuffer);
 
-	
+
 
 
 
@@ -263,6 +268,9 @@ void OurTestScene::Render()
 	// Load matrices + Sponza's transformation to the device and render it
 	UpdateTransformationBuffer(m_sponza_transform, m_view_matrix, m_projection_matrix);
 	m_sponza->Render();
+
+	UpdateTransformationBuffer(m_skybox_transform, m_view_matrix, m_projection_matrix);
+	m_skybox->Render();
 }
 
 
@@ -272,6 +280,8 @@ void OurTestScene::Release()
 
 	SAFE_DELETE(m_quad);
 	SAFE_DELETE(m_sponza);
+	SAFE_DELETE(m_skybox);
+
 	SAFE_DELETE(m_camera);
 
 	SAFE_RELEASE(m_transformation_buffer);

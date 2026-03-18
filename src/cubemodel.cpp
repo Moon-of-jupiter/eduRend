@@ -1,5 +1,5 @@
 #include "cubemodel.h"
-CubeModel::CubeModel(Material material,
+CubeModel::CubeModel(Material material, bool invert,
 	ID3D11Device* dxdevice,
 	ID3D11DeviceContext* dxdevice_context, ID3D11Buffer* materialBuffer)
 	: Model(dxdevice, dxdevice_context)
@@ -41,7 +41,7 @@ CubeModel::CubeModel(Material material,
 
 	float degreesToRad = 1.0/180.0* MATH_H::PI;
 	for (int i = 0; i < 6; i++) {
-		FillVertexVector(sideVertices, sides[i].y * degreesToRad, sides[i].x * degreesToRad, 0.5f);
+		FillVertexVector(sideVertices, sides[i].y * degreesToRad, sides[i].x * degreesToRad, 0.5f, invert);
 
 
 		vertices.push_back(sideVertices[0]);
@@ -128,7 +128,7 @@ CubeModel::CubeModel(Material material,
 }
 
 
-void CubeModel::FillVertexVector(std::vector<Vertex> & v, float pitch, float yaw, float scale) {
+void CubeModel::FillVertexVector(std::vector<Vertex> & v, float pitch, float yaw, float scale, bool invert) {
 	while (v.size() < 4) {
 		Vertex empty;
 		v.push_back(empty);
@@ -139,16 +139,19 @@ void CubeModel::FillVertexVector(std::vector<Vertex> & v, float pitch, float yaw
 	
 	float halfScale = scale * 0.5f;
 
+	float normal = invert ? -1 : 1;
+
 	vec4f c[5] =
 	{
-		{ -scale, -scale,  scale, 1 },
-		{  scale, -scale,  scale, 1 },
-		{  scale,  scale,  scale, 1 },
-		{ -scale,  scale,  scale, 1 },
+		{ -scale, -scale,  scale * normal, 1 },
+		{  scale, -scale,  scale * normal, 1 },
+		{  scale,  scale,  scale * normal, 1 },
+		{ -scale,  scale,  scale * normal, 1 },
 
-		{  0,  0,  1, 0 },
-		
+		{  0, 0, 1, 0 }
 	};
+
+	
 
 	auto p = rot * c[4];
 	
@@ -179,7 +182,7 @@ void CubeModel::UpdateMaterialBuffer(const Material& material) const {
 	m_dxdevice_context->Map(m_materialBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &resource);
 	MaterialBuffer* materialData = (MaterialBuffer*)resource.pData;
 
-	materialData->ambiantColor = vec4f(0.1f, 0, 0.4f, 1);
+	materialData->ambiantColor = vec4f(0.1f, 0, 0.4f, material.inv_skybox_value);
 	materialData->specularColor = vec4f(material.SpecularColour, 1);
 	materialData->diffuseColor_Glossyness = vec4f(material.DiffuseColour, 40);
 

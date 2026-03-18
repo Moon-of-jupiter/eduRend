@@ -95,10 +95,13 @@ class OurTestScene : public Scene
 
 	Model* m_quad;
 	Model* m_sponza;
+	Model* m_skybox;
 
 	mat4f m_sponza_transform;
 	mat4f m_quad_transform;
 	mat4f m_smallCube_transform;
+
+	mat4f m_skybox_transform;
 
 	mat4f m_view_matrix;
 	mat4f m_projection_matrix;

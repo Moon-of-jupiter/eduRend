@@ -16,7 +16,7 @@ public:
 	 * @param dxdevice Valid ID3D11Device.
 	 * @param dxdevice_context Valid ID3D11DeviceContext.
 	*/
-	CubeModel(Material material, ID3D11Device* dxdevice, ID3D11DeviceContext* dxdevice_context, ID3D11Buffer* materialBuffer);
+	CubeModel(Material material, bool invert, ID3D11Device* dxdevice, ID3D11DeviceContext* dxdevice_context, ID3D11Buffer* materialBuffer);
 
 
 	void UpdateMaterialBuffer(const Material& material) const;
@@ -28,7 +28,7 @@ public:
 	*/
 	virtual void Render() const;
 
-	void FillVertexVector(std::vector<Vertex>& v, float pitch, float yaw, float scale);
+	void FillVertexVector(std::vector<Vertex>& v, float pitch, float yaw, float scale, bool invert);
 
 	/**
 	 *@brief Destructor.

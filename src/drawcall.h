@@ -55,6 +55,7 @@ struct Material
 	Texture SpecularTexture;
 	// + other texture types
 
+	float inv_skybox_value = 1;
 
 };
 
