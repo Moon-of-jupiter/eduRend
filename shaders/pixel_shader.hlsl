@@ -167,7 +167,7 @@ float4 PS_HalfLambert(PSIn input)
     // comp
     
     // reflection
-    float4 reflection_component = reflectionColor * specular_texture;
+    float4 reflection_component = reflectionColor * specular_texture * 2;
     
     // diffuse
     
@@ -194,6 +194,38 @@ float4 PS_HalfLambert(PSIn input)
     
     
     
+    
+    
+    
+    
+}
+
+
+// light_vec = light_pos - world_pos
+// view_vec  = world_pos - camera_pos
+float4 PhongSimple(float3 light_vec, float3 view_vec, float3 world_normal)
+{
+    // lambert
+    float lambert = dot(world_normal, light_vec);
+    lambert = clamp(lambert, 0, 1);
+    
+    // specular
+    float light_reflection = reflect(light_vec, world_normal);
+    float specular = dot(view_vec, light_reflection);
+    specular = clamp(specular, 0, 1);
+    
+    // input parameters
+    float glossy = 10;
+    
+    float4 kD = float4(1, 1, 1, 1); // diffuse color
+    float4 kA = float4(0, 0, 0, 1); // ambiant color
+    float4 kS = float4(1, 1, 1, 1); // specular color
+    
+    // phong
+    // (ambiant color) + (diffuse color * lambert) + (specular color * (specular ^ glossy))
+    return kA + lambert * kD + pow(specular, glossy) * kS;
+    
+    // kA + kD (N dot L) + kS ((L reflect N) dot V)
 }
 
 
@@ -288,7 +320,7 @@ float4 PS_Styalized(PSIn input)
     
     float4 specularStep = smoothstep(0.49, 0.5, specular * specular_texture + dither * 1);
     
-
+   
     return float4(diffuseColor_Glossyness.yxz, 1) * diffuseTex * (posterized * lightColor) + AmbiantColor + specularStep * specular_texture * lightColor * lightColor.a + edge * specularColor * lightColor; //frensel * 10 + step(0.4, frensel * half_lambert);
     
     

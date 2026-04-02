@@ -98,7 +98,7 @@ void OurTestScene::Init()
 	m_cube_texture = Texture();
 
 	//cube map skybox
-	SetSkyboxCubeMap("assets/cubemaps/Skybox/Skybox-");
+	SetSkyboxCubeMap("assets/cubemaps/astrocosm_01/astrocosm_reflection_01_");
 	//"assets/cubemaps/astrocosm_01/astrocosm_reflection_01_"
 	//"assets/cubemaps/Skybox/Skybox-"
 	//"assets/cubemaps/debug_cubemap/debug_"
